@@ -97,11 +97,7 @@ export default defineConfig(({ mode }) => {
         },
         {
           find: 'process',
-          replacement: 'process/browser',
-        },
-        {
-          find: 'process/',
-          replacement: 'process/browser/',
+          replacement: 'process/browser.js',
         },
         {
           find: 'process/browser',
