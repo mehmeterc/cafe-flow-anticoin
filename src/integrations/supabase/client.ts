@@ -2,10 +2,20 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://pwqmspzjibtbdjpqicpp.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3cW1zcHpqaWJ0YmRqcHFpY3BwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0MDgyMTQsImV4cCI6MjA2Mjk4NDIxNH0.M_ShyRjasbDUUoK2t2FIsTSzaZNuVsIwsCuPN2mzGSI";
+// Get values from environment variables
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+// Validate that environment variables are set
+if (!SUPABASE_URL) {
+  console.error('VITE_SUPABASE_URL is not defined in environment variables');
+}
+
+if (!SUPABASE_ANON_KEY) {
+  console.error('VITE_SUPABASE_ANON_KEY is not defined in environment variables');
+}
+
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY);
