@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node vercel-build.js",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "vercel-build": "vite build && node vercel-build.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
