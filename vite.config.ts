@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 import { componentTagger } from 'lovable-tagger';
 import { bufferPolyfill } from './vite.buffer.polyfill';
+import { processPolyfill } from './vite.process.polyfill';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -40,6 +41,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === 'development' && componentTagger(),
     bufferPolyfill(),
+    processPolyfill(),
   ].filter(Boolean),
   
   // Optimize dependencies
@@ -76,17 +78,45 @@ export default defineConfig(({ mode }) => ({
   
   // Resolve aliases
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      buffer: 'buffer/',
-      crypto: 'crypto-browserify',
-      stream: 'stream-browserify',
-      util: 'util/',
-      process: 'process/browser',
-    },
+    alias: [
+      {
+        find: '@',
+        replacement: path.resolve(__dirname, './src'),
+      },
+      {
+        find: 'buffer',
+        replacement: 'buffer',
+      },
+      {
+        find: 'crypto',
+        replacement: 'crypto-browserify',
+      },
+      {
+        find: 'stream',
+        replacement: 'stream-browserify',
+      },
+      {
+        find: 'util',
+        replacement: 'util',
+      },
+      {
+        find: 'process',
+        replacement: 'process/browser.js',
+      },
+      {
+        find: 'process/browser',
+        replacement: 'process/browser.js',
+      },
+    ],
   },
   
   // Define global constants
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(mode),
+    'process.browser': true,
+    global: 'window',
+    'Buffer.isBuffer': 'function() { return false; }',
+  },
   define: {
     'process.env': {},
     'process.browser': true,

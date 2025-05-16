@@ -28,77 +28,72 @@
     <meta name="theme-color" content="#ffffff" />
     <link rel="manifest" href="/manifest.json" />
 
-    <!-- Buffer polyfill -->
+    <!-- Load polyfills before any other scripts -->    
     <script>
-      // Set up process.env for the app
+      console.log('Initializing polyfills');
+      
+      // Set up global window object
+      window.global = window;
+      
+      // Define process
       window.process = {
         env: { NODE_ENV: 'production' },
         browser: true,
         version: '',
-        nextTick: (fn, ...args) => Promise.resolve().then(() => fn(...args))
+        nextTick: function(fn, ...args) { setTimeout(() => fn(...args), 0); },
+        cwd: function() { return '/'; }
+      };
+      
+      // Mock require function to prevent errors
+      window.require = function(id) {
+        console.log('require called for:', id);
+        if (id === 'process') return window.process;
+        if (id === 'buffer') return { Buffer: window.Buffer };
+        return {};
+      };
+      
+      // Define Buffer
+      window.Buffer = {
+        from: function(data, encoding) {
+          if (typeof data === 'string') {
+            if (encoding === 'base64') {
+              try {
+                const binary = atob(data);
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) {
+                  bytes[i] = binary.charCodeAt(i);
+                }
+                return bytes;
+              } catch (e) {
+                console.error('Base64 decode error:', e);
+                return new Uint8Array(0);
+              }
+            }
+            return new TextEncoder().encode(data);
+          }
+          return new Uint8Array(Array.isArray(data) ? data : 0);
+        },
+        isBuffer: function(obj) { return obj instanceof Uint8Array; },
+        alloc: function(size) { return new Uint8Array(size); }
+      };
+      
+      // Ensure React.createContext exists
+      window.React = window.React || {};
+      window.React.createContext = window.React.createContext || function(defaultValue) {
+        console.log('Using polyfill for React.createContext');
+        return {
+          Provider: function(props) { return props.children; },
+          Consumer: function(props) { return props.children(defaultValue); },
+          displayName: 'PolyfillContext'
+        };
       };
 
-      // Load Buffer polyfill
-      (function() {
-        // Only set if not already defined
-        if (typeof window.Buffer === 'undefined') {
-          try {
-            // Try to use the browser's TextEncoder/TextDecoder for Buffer if available
-            if (typeof TextEncoder !== 'undefined' && typeof TextDecoder !== 'undefined') {
-              const encoder = new TextEncoder();
-              const decoder = new TextDecoder();
-              
-              window.Buffer = {
-                from: (str, encoding) => {
-                  if (encoding === 'base64') {
-                    const binaryString = atob(str);
-                    const bytes = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                      bytes[i] = binaryString.charCodeAt(i);
-                    }
-                    return bytes;
-                  }
-                  return encoder.encode(str).buffer;
-                },
-                toString: (buf, encoding) => {
-                  if (encoding === 'base64') {
-                    let binary = '';
-                    const bytes = new Uint8Array(buf);
-                    for (let i = 0; i < bytes.byteLength; i++) {
-                      binary += String.fromCharCode(bytes[i]);
-                    }
-                    return btoa(binary);
-                  }
-                  return decoder.decode(new Uint8Array(buf));
-                },
-                isBuffer: (obj) => {
-                  return obj instanceof ArrayBuffer || 
-                         obj instanceof Uint8Array ||
-                         (obj && typeof obj === 'object' && 
-                          typeof obj.length === 'number' &&
-                          obj.constructor.name === 'Uint8Array');
-                }
-              };
-            } else {
-              // Fallback to empty Buffer implementation
-              console.warn('TextEncoder/TextDecoder not available, using limited Buffer polyfill');
-              window.Buffer = {
-                from: () => new Uint8Array(0),
-                toString: () => '',
-                isBuffer: () => false
-              };
-            }
-          } catch (e) {
-            console.error('Failed to initialize Buffer polyfill:', e);
-            window.Buffer = {
-              from: () => new Uint8Array(0),
-              toString: () => '',
-              isBuffer: () => false
-            };
-          }
-        }
-      })();
+      // Log successful initialization
+      console.log('Polyfills initialized!');
     </script>
+    
+    <!-- Load the comprehensive polyfill -->    
+    <script src="/node-polyfill.js"></script>
   </head>
 
   <body>
