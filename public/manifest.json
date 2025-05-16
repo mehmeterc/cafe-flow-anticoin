@@ -1,6 +1,7 @@
 {
-  "name": "Cafe Flow",
+  "name": "Cafe Flow AntiCoin",
   "short_name": "CafeFlow",
+  "description": "Earn and spend AntiCoins at your favorite cafes",
   "icons": [
     {
       "src": "/icon-192x192.png",
@@ -16,5 +17,5 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#000000"
+  "theme_color": "#6A0DAD"
 }
