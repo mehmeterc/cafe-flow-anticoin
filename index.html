@@ -1,20 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- CRITICAL: These polyfills must be first, before any other script or CSS -->  
-    <script>
-      // Immediately define require and other critical functions to prevent errors
-      window.require = function(mod) {
-        console.warn('require() called with:', mod);
-        if (mod === 'process') return window.process = { env: {}, browser: true };
-        if (mod === 'buffer') return { Buffer: { from: function() { return {} } } };
-        if (mod === 'react') return window.React = window.React || { createContext: function() { return { Provider: function(p) { return p.children }, Consumer: function() {} } } };
-        return {};
-      };
-      
-      // Ensure React exists with createContext
-      window.React = window.React || { createContext: function() { return { Provider: function(p) { return p.children }, Consumer: function() {} } } };
-    </script>
+    <!-- CRITICAL: Preload script must be loaded before anything else -->
+    <script src="/preload.js"></script>
     
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -43,67 +31,25 @@
     <meta name="theme-color" content="#ffffff" />
     <link rel="manifest" href="/manifest.json" />
 
-    <!-- Load polyfills before any other scripts -->    
+    <!-- Load polyfills before any other scripts -->
     <script>
-      console.log('Initializing polyfills');
+      console.log('Verifying preload success');
       
-      // Set up global window object
-      window.global = window;
-      
-      // Define process
-      window.process = {
-        env: { NODE_ENV: 'production' },
-        browser: true,
-        version: '',
-        nextTick: function(fn, ...args) { setTimeout(() => fn(...args), 0); },
-        cwd: function() { return '/'; }
-      };
-      
-      // Mock require function to prevent errors
-      window.require = function(id) {
-        console.log('require called for:', id);
-        if (id === 'process') return window.process;
-        if (id === 'buffer') return { Buffer: window.Buffer };
-        return {};
-      };
-      
-      // Define Buffer
-      window.Buffer = {
-        from: function(data, encoding) {
-          if (typeof data === 'string') {
-            if (encoding === 'base64') {
-              try {
-                const binary = atob(data);
-                const bytes = new Uint8Array(binary.length);
-                for (let i = 0; i < binary.length; i++) {
-                  bytes[i] = binary.charCodeAt(i);
-                }
-                return bytes;
-              } catch (e) {
-                console.error('Base64 decode error:', e);
-                return new Uint8Array(0);
-              }
-            }
-            return new TextEncoder().encode(data);
-          }
-          return new Uint8Array(Array.isArray(data) ? data : 0);
-        },
-        isBuffer: function(obj) { return obj instanceof Uint8Array; },
-        alloc: function(size) { return new Uint8Array(size); }
-      };
-      
-      // Ensure React.createContext exists
-      window.React = window.React || {};
-      window.React.createContext = window.React.createContext || function(defaultValue) {
-        console.log('Using polyfill for React.createContext');
-        return {
-          Provider: function(props) { return props.children; },
-          Consumer: function(props) { return props.children(defaultValue); },
-          displayName: 'PolyfillContext'
+      // Verify that our preload script has executed
+      if (!window.require || !window.React || !window.React.createContext) {
+        console.error('Preload script did not execute properly - attempting emergency polyfill');
+        
+        // Emergency polyfill
+        window.global = window;
+        window.process = window.process || { env: { NODE_ENV: 'production' }, browser: true };
+        window.require = window.require || function(id) { return {}; };
+        window.React = window.React || {};
+        window.React.createContext = window.React.createContext || function() {
+          return { Provider: function(p) { return p.children; }, Consumer: function(p) { return p.children; } };
         };
-      };
-
-      // Log successful initialization
+      } else {
+        console.log('Preload verification passed');
+      }
       console.log('Polyfills initialized!');
     </script>
     
