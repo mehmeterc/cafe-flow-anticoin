@@ -4,7 +4,6 @@ import BottomNav from "@/components/layout/BottomNav";
 import HeroSection from "@/components/home/HeroSection";
 import FeatureCards from "@/components/home/FeatureCards";
 import EventsCarousel from "@/components/home/EventsCarousel";
-import CafeSpotlight from "@/components/home/CafeSpotlight";
 import CtaSection from "@/components/home/CtaSection";
 import Footer from "@/components/layout/Footer";
 
@@ -16,7 +15,6 @@ const Index = () => {
         <HeroSection />
         <FeatureCards />
         <EventsCarousel />
-        <CafeSpotlight />
         <CtaSection />
       </main>
       <Footer />
