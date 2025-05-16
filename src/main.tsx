@@ -1,3 +1,7 @@
+// Import polyfills and shims first - must be before any other imports
+import './shims';
+
+// React imports
 import { createRoot } from 'react-dom/client';
 import { StrictMode } from 'react';
 import App from './App';

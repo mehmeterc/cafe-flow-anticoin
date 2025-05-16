@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- CRITICAL: These polyfills must be first, before any other script or CSS -->  
+    <script>
+      // Immediately define require and other critical functions to prevent errors
+      window.require = function(mod) {
+        console.warn('require() called with:', mod);
+        if (mod === 'process') return window.process = { env: {}, browser: true };
+        if (mod === 'buffer') return { Buffer: { from: function() { return {} } } };
+        if (mod === 'react') return window.React = window.React || { createContext: function() { return { Provider: function(p) { return p.children }, Consumer: function() {} } } };
+        return {};
+      };
+      
+      // Ensure React exists with createContext
+      window.React = window.React || { createContext: function() { return { Provider: function(p) { return p.children }, Consumer: function() {} } } };
+    </script>
+    
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Cafe Flow - AntiCoin</title>

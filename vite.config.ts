@@ -38,6 +38,15 @@ export default defineConfig(({ mode }) => ({
   
   // Add plugins
   plugins: [
+    {
+      name: 'inject-polyfills',
+      enforce: 'pre',
+      transformIndexHtml(html) {
+        // Inject critical polyfills at the beginning of head
+        return html.replace('<head>', `<head>
+    <script>window.global=window;window.process={env:{NODE_ENV:"${mode}"},browser:true};window.React=window.React||{createContext:function(defaultValue){return{Provider:function(props){return props.children},Consumer:function(props){return typeof props.children==='function'?props.children(defaultValue):props.children}}}};window.require=function(mod){if(mod==='process')return window.process;if(mod==='react')return window.React;return{}};</script>`);
+      },
+    },
     react(),
     mode === 'development' && componentTagger(),
     bufferPolyfill(),
