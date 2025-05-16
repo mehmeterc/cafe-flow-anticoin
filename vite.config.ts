@@ -1,7 +1,8 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import path from "path";
-import { componentTagger } from "lovable-tagger";
+import { defineConfig, loadEnv } from 'vite';
+import react from '@vitejs/plugin-react-swc';
+import path from 'path';
+import { componentTagger } from 'lovable-tagger';
+import { bufferPolyfill } from './vite.buffer.polyfill';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -34,29 +35,63 @@ export default defineConfig(({ mode }) => ({
     },
   },
   
-  // Polyfill for Node.js built-ins and optimize dependencies
+  // Add plugins
+  plugins: [
+    react(),
+    mode === 'development' && componentTagger(),
+    bufferPolyfill(),
+  ].filter(Boolean),
+  
+  // Optimize dependencies
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
-    exclude: [],
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'buffer',
+      'crypto-browserify',
+      'stream-browserify',
+      'util'
+    ],
     esbuildOptions: {
-      // Node.js global to browser globalThis
       define: {
         global: 'globalThis',
       },
-      // Enable esbuild polyfill plugins
       plugins: [
-        // Add Node.js globals and Buffer polyfill
         {
           name: 'fix-node-globals-polyfill',
           setup(build) {
-            build.onResolve({ filter: /_virtual-process-polyfill_./ }, args => ({
-              path: args.path,
-              external: true
-            }))
+            build.onResolve(
+              { filter: /_virtual-process-polyfill_./ },
+              (args) => ({
+                path: args.path,
+                external: true,
+              })
+            );
           },
         },
       ],
     },
+  },
+  
+  // Resolve aliases
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      buffer: 'buffer/',
+      crypto: 'crypto-browserify',
+      stream: 'stream-browserify',
+      util: 'util/',
+      process: 'process/browser',
+    },
+  },
+  
+  // Define global constants
+  define: {
+    'process.env': {},
+    'process.browser': true,
+    global: 'window',
+    'Buffer.isBuffer': 'function() { return false; }',
   },
   build: {
     // Enable chunk size optimization

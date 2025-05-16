@@ -28,18 +28,76 @@
     <meta name="theme-color" content="#ffffff" />
     <link rel="manifest" href="/manifest.json" />
 
-    <!-- Polyfills -->
+    <!-- Buffer polyfill -->
     <script>
-      // Apply a class to the HTML element if JavaScript is enabled
-      document.documentElement.classList.add('js');
-      
-      // Polyfill for process
+      // Set up process.env for the app
       window.process = {
-        env: {}
+        env: { NODE_ENV: 'production' },
+        browser: true,
+        version: '',
+        nextTick: (fn, ...args) => Promise.resolve().then(() => fn(...args))
       };
-      
-      // Polyfill for Buffer
-      window.Buffer = window.Buffer || require('buffer').Buffer;
+
+      // Load Buffer polyfill
+      (function() {
+        // Only set if not already defined
+        if (typeof window.Buffer === 'undefined') {
+          try {
+            // Try to use the browser's TextEncoder/TextDecoder for Buffer if available
+            if (typeof TextEncoder !== 'undefined' && typeof TextDecoder !== 'undefined') {
+              const encoder = new TextEncoder();
+              const decoder = new TextDecoder();
+              
+              window.Buffer = {
+                from: (str, encoding) => {
+                  if (encoding === 'base64') {
+                    const binaryString = atob(str);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                      bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    return bytes;
+                  }
+                  return encoder.encode(str).buffer;
+                },
+                toString: (buf, encoding) => {
+                  if (encoding === 'base64') {
+                    let binary = '';
+                    const bytes = new Uint8Array(buf);
+                    for (let i = 0; i < bytes.byteLength; i++) {
+                      binary += String.fromCharCode(bytes[i]);
+                    }
+                    return btoa(binary);
+                  }
+                  return decoder.decode(new Uint8Array(buf));
+                },
+                isBuffer: (obj) => {
+                  return obj instanceof ArrayBuffer || 
+                         obj instanceof Uint8Array ||
+                         (obj && typeof obj === 'object' && 
+                          typeof obj.length === 'number' &&
+                          obj.constructor.name === 'Uint8Array');
+                }
+              };
+            } else {
+              // Fallback to empty Buffer implementation
+              console.warn('TextEncoder/TextDecoder not available, using limited Buffer polyfill');
+              window.Buffer = {
+                from: () => new Uint8Array(0),
+                toString: () => '',
+                isBuffer: () => false
+              };
+            }
+          } catch (e) {
+            console.error('Failed to initialize Buffer polyfill:', e);
+            window.Buffer = {
+              from: () => new Uint8Array(0),
+              toString: () => '',
+              isBuffer: () => false
+            };
+          }
+        }
+      })();
     </script>
   </head>
 
