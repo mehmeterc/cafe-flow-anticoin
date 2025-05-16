@@ -65,11 +65,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { data: authUser, error: authError } = await supabase.auth.getUser();
       if (authError) throw authError;
       
-      // Try to fetch the user profile with minimal fields first
+      // Try to fetch the user profile with all fields
       try {
         const { data: profileData, error: fetchError } = await supabase
           .from('user_profiles')
-          .select('id, anticoin_balance')
+          .select('*')
           .eq('id', userId)
           .single();
           
@@ -78,13 +78,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const updates: any = {};
           let needsUpdate = false;
           
-          if (authUser.user?.email && !profileData.email) {
-            updates.email = authUser.user.email;
+          if (authUser.user?.email && !profileData.name) {
+            updates.name = authUser.user.email.split('@')[0]; // Use email prefix as name
             needsUpdate = true;
           }
           
-          if (authUser.user?.user_metadata?.full_name && !profileData.full_name) {
-            updates.full_name = authUser.user.user_metadata.full_name;
+          if (authUser.user?.user_metadata?.full_name && !profileData.name) {
+            updates.name = authUser.user.user_metadata.full_name;
             needsUpdate = true;
           }
           
@@ -117,8 +117,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           .from('user_profiles')
           .insert({
             id: userId,
-            email: authUser.user?.email || null,
-            full_name: authUser.user?.user_metadata?.full_name || null,
+            name: authUser.user?.user_metadata?.full_name || authUser.user?.email?.split('@')[0] || 'User',
+            avatar_url: null,
+            bio: null,
+            work_style: null,
+            skills: [],
+            wallet_address: null,
             anticoin_balance: 0,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
