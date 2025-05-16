@@ -5,18 +5,55 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // Base public path when served in production
+  base: "./",
+  
   server: {
     host: "::",
     port: 8080,
   },
+  
+  // Define global constant replacements
+  define: {
+    'process.env': {},
+    global: 'window',
+  },
+  
   plugins: [
     react(),
-    mode === 'development' &&
-    componentTagger(),
+    mode === 'development' && componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Polyfills for Node.js built-ins
+      crypto: 'crypto-browserify',
+      stream: 'stream-browserify',
+      util: 'util',
+      buffer: 'buffer',
+    },
+  },
+  
+  // Polyfill for Node.js built-ins
+  optimizeDeps: {
+    esbuildOptions: {
+      // Node.js global to browser globalThis
+      define: {
+        global: 'globalThis',
+      },
+      // Enable esbuild polyfill plugins
+      plugins: [
+        // Add Node.js globals and Buffer polyfill
+        {
+          name: 'fix-node-globals-polyfill',
+          setup(build) {
+            build.onResolve({ filter: /_virtual-process-polyfill_./ }, args => ({
+              path: args.path,
+              external: true
+            }))
+          },
+        },
+      ],
     },
   },
   build: {
