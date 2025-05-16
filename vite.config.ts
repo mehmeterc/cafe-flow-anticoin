@@ -34,8 +34,10 @@ export default defineConfig(({ mode }) => ({
     },
   },
   
-  // Polyfill for Node.js built-ins
+  // Polyfill for Node.js built-ins and optimize dependencies
   optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom'],
+    exclude: [],
     esbuildOptions: {
       // Node.js global to browser globalThis
       define: {
@@ -89,10 +91,5 @@ export default defineConfig(({ mode }) => ({
         },
       },
     },
-  },
-  // Enable caching for faster reloads
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
-    exclude: [],
-  },
+  }
 }));
