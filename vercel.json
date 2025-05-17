@@ -30,6 +30,10 @@
       "dest": "/assets/$1"
     },
     {
+      "src": "/_next/static/(.*)",
+      "dest": "/_next/static/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
@@ -41,5 +45,8 @@
   },
   "env": {
     "NODE_ENV": "production"
-  }
+  },
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite"
 }
