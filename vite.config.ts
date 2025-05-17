@@ -10,9 +10,10 @@ export default defineConfig(({ mode }) => {
   // Define environment variables to be replaced during build
   const defineVars = {
     'process.env.NODE_ENV': JSON.stringify(mode),
+    'process.env': {},
     'process.browser': true,
     'global': 'window',
-    'process.env': {}
+    'Buffer.isBuffer': 'function() { return false; }'
   };
   // Create a single plugins array
   const plugins: (PluginOption | false)[] = [
@@ -114,15 +115,6 @@ export default defineConfig(({ mode }) => {
           replacement: 'process/browser.js',
         },
       ],
-    },
-    
-    // Define global constants
-    define: {
-      'process.env.NODE_ENV': JSON.stringify(mode),
-      'process.env': {},
-      'process.browser': true,
-      global: 'window',
-      'Buffer.isBuffer': 'function() { return false; }',
     },
     
     // Optimize dependencies
