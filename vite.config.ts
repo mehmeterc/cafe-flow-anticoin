@@ -2,56 +2,61 @@ import { defineConfig, type PluginOption } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 import { componentTagger } from 'lovable-tagger';
-import { bufferPolyfill } from './vite.buffer.polyfill';
-import { processPolyfill } from './vite.process.polyfill';
 
-// https://vitejs.dev/config/
+// Simple type declarations
+declare global {
+  interface Window {
+    process: any;
+    global: any;
+  }
+}
+
 export default defineConfig(({ mode }) => {
   // Define environment variables to be replaced during build
-  const defineVars = {
-    'process.env.NODE_ENV': JSON.stringify(mode),
-    'process.env': {},
-    'process.browser': true,
-    'global': 'window',
-    'Buffer.isBuffer': 'function() { return false; }'
+  const env = {
+    NODE_ENV: JSON.stringify(mode),
+    BROWSER: 'true'
   };
-  // Create a single plugins array
-  const plugins: (PluginOption | false)[] = [
+
+  const define = {
+    'process.env': JSON.stringify(env),
+    'process.browser': 'true',
+    'global': 'window',
+    'globalThis.process': '{}',
+    'globalThis.Buffer': '{}',
+    'Buffer.isBuffer': 'false'
+  };
+
+  const plugins: PluginOption[] = [
     // Inject polyfills as the first plugin
     {
       name: 'inject-polyfills',
-      enforce: 'pre' as const,
-      transformIndexHtml: (html: string) => {
+      enforce: 'pre',
+      transformIndexHtml(html: string) {
         return html.replace(
           '<head>',
           `<head>
             <script>
               window.global = window;
               window.process = { 
-                env: { NODE_ENV: "${mode}" },
+                env: { NODE_ENV: ${JSON.stringify(mode)} },
                 browser: true 
               };
-              
-              // Simple React context polyfill
-              window.React = window.React || {
-                createContext: function(defaultValue) {
-                  return {
-                    Provider: function(props) { return props.children; },
-                    Consumer: function(props) { 
-                      return typeof props.children === 'function' 
-                        ? props.children(defaultValue) 
-                        : props.children; 
-                    }
-                  };
-                }
-              };
-              
-              // Simple require polyfill
-              window.require = function(mod) {
-                if (mod === 'process') return window.process;
-                if (mod === 'react') return window.React;
-                return {};
-              };
+
+              // Simple Buffer polyfill
+              if (typeof window.Buffer === 'undefined') {
+                window.Buffer = {
+                  isBuffer: function() { return false; },
+                  from: function(data) { 
+                    return typeof data === 'string' 
+                      ? new TextEncoder().encode(data).buffer 
+                      : new Uint8Array(data || 0); 
+                  },
+                  alloc: function(size) { 
+                    return new Uint8Array(size); 
+                  }
+                };
+              }
             </script>`
         );
       },
@@ -62,113 +67,88 @@ export default defineConfig(({ mode }) => {
     
     // Development-only plugins
     mode === 'development' && componentTagger(),
-    
-    // Polyfills
-    bufferPolyfill(),
-    processPolyfill(),
-  ].filter(Boolean);
+  ].filter(Boolean) as PluginOption[];
 
   return {
     // Base public path when served in production
     base: "./",
     
+    // Development server configuration
     server: {
       host: "::",
       port: 8080,
+      hmr: true,
+      cors: true,
+    },
+    
+    // Preview server configuration
+    preview: {
+      port: 8080,
+      open: true,
     },
     
     // Define global constants
-    define: defineVars,
+    define,
     
-    // Plugins configuration
-    plugins: plugins.filter(Boolean) as PluginOption[],
-    
-    // Resolve configuration
-    resolve: {
-      alias: [
-        {
-          find: '@',
-          replacement: path.resolve(__dirname, './src'),
-        },
-        {
-          find: 'buffer',
-          replacement: 'buffer',
-        },
-        {
-          find: 'crypto',
-          replacement: 'crypto-browserify',
-        },
-        {
-          find: 'stream',
-          replacement: 'stream-browserify',
-        },
-        {
-          find: 'util',
-          replacement: 'util',
-        },
-        {
-          find: 'process',
-          replacement: 'process/browser.js',
-        },
-        {
-          find: 'process/browser',
-          replacement: 'process/browser.js',
-        },
-      ],
+    // Configure esbuild for better JSX handling
+    esbuild: {
+      jsx: 'automatic',
+      jsxImportSource: 'react',
     },
     
-    // Optimize dependencies
-    optimizeDeps: {
-      include: [
-        'react',
-        'react-dom',
-        'react-router-dom',
-        'buffer',
-        'crypto-browserify',
-        'stream-browserify',
-        'util'
-      ],
-      esbuildOptions: {
-        define: {
-          global: 'globalThis',
-        },
-        plugins: [
-          {
-            name: 'fix-node-globals-polyfill',
-            setup(build) {
-              build.onResolve(
-                { filter: /_virtual-process-polyfill_./ },
-                (args) => ({
-                  path: args.path,
-                  external: true,
-                })
-              );
-            },
-          },
-        ],
+    // Resolve aliases
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
       },
     },
+    
+    // Plugins
+    plugins,
     
     // Build configuration
     build: {
       // Enable chunk size optimization
       chunkSizeWarningLimit: 800,
+      
       // Improved CSS processing
       cssCodeSplit: true,
+      
       // Minify better for production
       minify: 'terser',
+      
+      // Terser options for better minification
       terserOptions: {
         compress: {
           drop_console: mode === 'production',
           drop_debugger: mode === 'production',
         },
       },
-      // Split code into smaller chunks
+      
+      // Configure esbuild for production
+      esbuildOptions: {
+        // Enable source maps in production if needed
+        sourcemap: mode === 'production',
+        
+        // Define global constants for production
+        define: {
+          'process.env.NODE_ENV': 'production',
+        },
+        
+        // Target modern browsers
+        target: 'es2020',
+        
+        // Enable tree-shaking
+        treeShaking: true,
+      },
+      
+      // Rollup options
       rollupOptions: {
         output: {
+          // Generate separate chunks for vendor code
           manualChunks: (id: string) => {
-            // Create separate chunks for large dependencies
             if (id.includes('node_modules')) {
+              // Create separate chunks for large dependencies
               if (id.includes('@tanstack/react-query')) {
                 return 'vendor-query';
               }
@@ -182,6 +162,11 @@ export default defineConfig(({ mode }) => {
             }
             return null;
           },
+          
+          // Configure chunk file names
+          chunkFileNames: 'assets/js/[name]-[hash].js',
+          entryFileNames: 'assets/js/[name]-[hash].js',
+          assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
         },
       },
     },

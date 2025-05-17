@@ -1,5 +1,5 @@
 // Import polyfills and shims first - must be before any other imports
-import './shims';
+import './shims.ts';
 
 // React imports
 import { createRoot } from 'react-dom/client';
