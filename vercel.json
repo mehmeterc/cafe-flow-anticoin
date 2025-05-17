@@ -46,7 +46,14 @@
   "env": {
     "NODE_ENV": "production"
   },
-  "buildCommand": "npm run build",
+  "buildCommand": "node vercel-build.js",
   "outputDirectory": "dist",
-  "framework": "vite"
+  "framework": "vite",
+  "installCommand": "npm install",
+  "devCommand": "vite --port $PORT",
+  "build": {
+    "env": {
+      "NODE_ENV": "production"
+    }
+  }
 }
