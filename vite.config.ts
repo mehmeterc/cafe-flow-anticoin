@@ -7,6 +7,13 @@ import { processPolyfill } from './vite.process.polyfill';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
+  // Define environment variables to be replaced during build
+  const defineVars = {
+    'process.env.NODE_ENV': JSON.stringify(mode),
+    'process.browser': true,
+    'global': 'window',
+    'process.env': {}
+  };
   // Create a single plugins array
   const plugins: (PluginOption | false)[] = [
     // Inject polyfills as the first plugin
@@ -69,8 +76,11 @@ export default defineConfig(({ mode }) => {
       port: 8080,
     },
     
+    // Define global constants
+    define: defineVars,
+    
     // Plugins configuration
-    plugins,
+    plugins: plugins.filter(Boolean) as PluginOption[],
     
     // Resolve configuration
     resolve: {
