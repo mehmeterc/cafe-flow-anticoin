@@ -92,8 +92,9 @@ export default defineConfig(({ mode }) => {
     
     // Configure esbuild for better JSX handling
     esbuild: {
-      jsx: 'automatic',
-      jsxImportSource: 'react',
+      jsx: 'transform',
+      jsxFactory: 'React.createElement',
+      jsxFragment: 'React.Fragment',
     },
     
     // Resolve aliases

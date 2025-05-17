@@ -59,18 +59,69 @@
     };
   }
   
-  // Expose React createContext if not available
-  if (typeof window.React === 'undefined') {
-    window.React = window.React || {};
-    if (!window.React.createContext) {
-      window.React.createContext = function(defaultValue) {
-        console.warn('Using polyfilled React.createContext');
-        return {
-          Provider: function({ children }) { return children; },
-          Consumer: function({ children }) { return children(defaultValue); }
-        };
+  // Expose React and ReactDOM if not available
+  window.React = window.React || {};
+  window.ReactDOM = window.ReactDOM || {};
+
+  // Set up complete React context API
+  if (!window.React.createContext) {
+    console.warn('Applying comprehensive React.createContext polyfill');
+    
+    window.React.createContext = function(defaultValue) {
+      const contextProp = Symbol('react.context');
+      
+      const context = {
+        $$typeof: contextProp,
+        Provider: function(props) { return props.children; },
+        Consumer: function(props) { 
+          if (typeof props.children === 'function') {
+            return props.children(defaultValue);
+          } 
+          return props.children; 
+        },
+        _currentValue: defaultValue,
+        _currentValue2: defaultValue,
+        _threadCount: 0,
+        _defaultValue: defaultValue,
+        displayName: 'PolyfillContext',
+        _currentRenderer: null,
+        _currentRenderer2: null
       };
-    }
+      
+      return context;
+    };
+  }
+  
+  // Ensure other essential React methods
+  if (!window.React.createElement) {
+    window.React.createElement = function(type, props, ...children) {
+      return { 
+        type, 
+        props: props || {}, 
+        children: children.length === 0 ? null : children.length === 1 ? children[0] : children 
+      };
+    };
+  }
+  
+  if (!window.React.Fragment) {
+    window.React.Fragment = Symbol('react.fragment');
+  }
+  
+  // Ensure hooks for components that might use them
+  if (!window.React.useState) {
+    window.React.useState = function(initialState) {
+      return [initialState, function() {}];
+    };
+  }
+  
+  if (!window.React.useEffect) {
+    window.React.useEffect = function() {};
+  }
+  
+  if (!window.React.useContext) {
+    window.React.useContext = function(context) {
+      return context._defaultValue;
+    };
   }
   
   // Mock require function for Node.js modules

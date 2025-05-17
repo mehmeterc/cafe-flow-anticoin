@@ -4,31 +4,59 @@
 // Skip processing this file with Vite's define
 // @ts-nocheck
 
+declare global {
+  interface Window {
+    process: any;
+    global: Window;
+    Buffer: any;
+  }
+}
+
 // Only run in browser environment
 if (typeof window !== 'undefined') {
   // Set up global object
   window.global = window;
   
+  // Ensure globalThis is defined
+  if (typeof globalThis === 'undefined') {
+    (window as any).globalThis = window;
+  }
+
   // Minimal process polyfill
-  window.process = {
-    env: { NODE_ENV: 'production' },
+  window.process = window.process || {
+    env: { NODE_ENV: process.env.NODE_ENV || 'production' },
     browser: true,
-    nextTick: (fn) => setTimeout(fn, 0),
+    version: '',
+    versions: { node: false },
+    nextTick: (fn: Function) => setTimeout(fn, 0),
     cwd: () => '/'
   };
   
   // Minimal Buffer polyfill
-  window.Buffer = {
-    from: (data) => 
-      typeof data === 'string' 
-        ? new TextEncoder().encode(data) 
-        : new Uint8Array(data),
-    isBuffer: (obj) => 
-      obj !== null && 
-      typeof obj === 'object' && 
-      obj.constructor === Uint8Array,
-    alloc: (size) => new Uint8Array(size)
-  };
+  if (!window.Buffer) {
+    const BufferImpl = function(arg: any, encodingOrOffset?: string | number, length?: number) {
+      return arg instanceof Uint8Array ? arg : new Uint8Array(typeof arg === 'number' ? arg : 0);
+    } as any;
+    
+    BufferImpl.from = function(data: any, encoding?: string) {
+      if (typeof data === 'string') {
+        return new TextEncoder().encode(data);
+      } else if (Array.isArray(data)) {
+        return new Uint8Array(data);
+      }
+      return new Uint8Array(data || 0);
+    };
+    
+    BufferImpl.alloc = function(size: number) {
+      return new Uint8Array(size);
+    };
+    
+    BufferImpl.isBuffer = function(obj: any) {
+      return obj instanceof Uint8Array;
+    };
+    
+    window.Buffer = BufferImpl;
+  }
   
   // Minimal require polyfill
   window.require = (mod) => {
@@ -48,5 +76,6 @@ if (typeof window !== 'undefined') {
   console.log('Shims initialized successfully');
 }
 
+
 // Export a dummy value to ensure this module is not tree-shaken
-export {};const POLYFILL_LOADED = true;
+export const POLYFILL_LOADED = true;
