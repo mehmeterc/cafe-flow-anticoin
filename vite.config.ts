@@ -121,69 +121,27 @@ export default defineConfig(({ mode }) => {
     
     // Optimize dependencies
     optimizeDeps: {
-      include: [
-        'react',
-        'react-dom',
-        'react-router-dom',
-        'buffer',
-        'crypto-browserify',
-        'stream-browserify',
-        'util'
-      ],
       esbuildOptions: {
         define: {
           global: 'globalThis',
         },
-        plugins: [
-          {
-            name: 'fix-node-globals-polyfill',
-            setup(build) {
-              build.onResolve(
-                { filter: /_virtual-process-polyfill_./ },
-                (args) => ({
-                  path: args.path,
-                  external: true,
-                })
-              );
-            },
-          },
-        ],
       },
     },
     
     // Build configuration
     build: {
-      // Enable chunk size optimization
-      chunkSizeWarningLimit: 800,
-      // Improved CSS processing
-      cssCodeSplit: true,
-      // Minify better for production
-      minify: 'terser',
-      terserOptions: {
-        compress: {
-          drop_console: mode === 'production',
-          drop_debugger: mode === 'production',
-        },
-      },
-      // Split code into smaller chunks
+      // Avoid excessive chunk splitting
+      chunkSizeWarningLimit: 1600,
+      // Keep CSS processing simple
+      cssCodeSplit: false,
+      // Set reasonable limits for build time
+      target: 'es2015',
+      // Simplify build
+      sourcemap: false,
+      // Reduce build complexity
       rollupOptions: {
         output: {
-          manualChunks: (id: string) => {
-            // Create separate chunks for large dependencies
-            if (id.includes('node_modules')) {
-              if (id.includes('@tanstack/react-query')) {
-                return 'vendor-query';
-              }
-              if (id.includes('react') || id.includes('react-dom')) {
-                return 'vendor-react';
-              }
-              if (id.includes('@radix-ui')) {
-                return 'vendor-radix';
-              }
-              return 'vendor'; // all other node_modules
-            }
-            return null;
-          },
+          manualChunks: undefined,
         },
       },
     },
