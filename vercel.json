@@ -1,4 +1,3 @@
-
 {
   "version": 2,
   "builds": [
@@ -42,6 +41,5 @@
   },
   "env": {
     "NODE_ENV": "production"
-  },
-  "buildCommand": "CI=false pnpm build"
+  }
 }

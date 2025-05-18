@@ -1,4 +1,3 @@
-
 // Post-build script for Vercel deployment
 const fs = require('fs');
 const path = require('path');
@@ -8,13 +7,7 @@ const distDir = path.join(__dirname, 'dist');
 const indexPath = path.join(distDir, 'index.html');
 const manifestPath = path.join(distDir, 'manifest.json');
 
-console.log('Running optimized Vercel post-build script...');
-
-// Ensure directories exist
-if (!fs.existsSync(distDir)) {
-  fs.mkdirSync(distDir, { recursive: true });
-  console.log('✅ Created dist directory');
-}
+console.log('Running Vercel post-build script...');
 
 // Fix 1: Ensure index.html contains necessary polyfills
 try {
@@ -32,6 +25,7 @@ try {
     
     // Ensure require is defined
     window.require = function(mod) {
+      console.log('require polyfill called with:', mod);
       if (mod === 'process') return window.process;
       if (mod === 'buffer') return { Buffer: window.Buffer };
       if (mod === 'react') return window.React || {};
@@ -58,7 +52,7 @@ try {
       console.log('⚠️ Polyfills already exist in index.html');
     }
   } else {
-    console.log('❌ index.html not found in build output, will be created during build');
+    console.error('❌ index.html not found in build output');
   }
 } catch (error) {
   console.error('❌ Error updating index.html:', error);
@@ -72,7 +66,7 @@ try {
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
     console.log('✅ Validated manifest.json');
   } else {
-    console.log('⚠️ manifest.json not found in build output, will be created during build');
+    console.error('❌ manifest.json not found in build output');
   }
 } catch (error) {
   console.error('❌ Error validating manifest.json:', error);
