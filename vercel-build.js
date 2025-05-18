@@ -1,4 +1,3 @@
-
 // Post-build script for Vercel deployment
 const fs = require('fs');
 const path = require('path');

@@ -12,7 +12,6 @@ export type Database = {
       anticoin_transactions: {
         Row: {
           amount: number
-          blockchain_tx_id: string | null
           created_at: string | null
           description: string | null
           id: string
@@ -22,7 +21,6 @@ export type Database = {
         }
         Insert: {
           amount: number
-          blockchain_tx_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -32,7 +30,6 @@ export type Database = {
         }
         Update: {
           amount?: number
-          blockchain_tx_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -145,7 +142,6 @@ export type Database = {
       }
       checkins: {
         Row: {
-          anticoin_earned: number | null
           cafe_id: string
           coins_earned: number | null
           cost: number | null
@@ -153,13 +149,11 @@ export type Database = {
           duration: number | null
           end_time: string | null
           id: string
-          minutes_spent: number | null
           start_time: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
-          anticoin_earned?: number | null
           cafe_id: string
           coins_earned?: number | null
           cost?: number | null
@@ -167,13 +161,11 @@ export type Database = {
           duration?: number | null
           end_time?: string | null
           id?: string
-          minutes_spent?: number | null
           start_time?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
-          anticoin_earned?: number | null
           cafe_id?: string
           coins_earned?: number | null
           cost?: number | null
@@ -181,7 +173,6 @@ export type Database = {
           duration?: number | null
           end_time?: string | null
           id?: string
-          minutes_spent?: number | null
           start_time?: string | null
           updated_at?: string | null
           user_id?: string
@@ -345,41 +336,38 @@ export type Database = {
       }
       user_profiles: {
         Row: {
-          anticoin_balance: number
+          anticoin_balance: number | null
           avatar_url: string | null
           bio: string | null
-          created_at: string
-          email: string | null
+          created_at: string | null
           id: string
           name: string | null
           skills: string[] | null
-          updated_at: string
+          updated_at: string | null
           wallet_address: string | null
           work_style: string | null
         }
         Insert: {
-          anticoin_balance?: number
+          anticoin_balance?: number | null
           avatar_url?: string | null
           bio?: string | null
-          created_at?: string
-          email?: string | null
+          created_at?: string | null
           id: string
           name?: string | null
           skills?: string[] | null
-          updated_at?: string
+          updated_at?: string | null
           wallet_address?: string | null
           work_style?: string | null
         }
         Update: {
-          anticoin_balance?: number
+          anticoin_balance?: number | null
           avatar_url?: string | null
           bio?: string | null
-          created_at?: string
-          email?: string | null
+          created_at?: string | null
           id?: string
           name?: string | null
           skills?: string[] | null
-          updated_at?: string
+          updated_at?: string | null
           wallet_address?: string | null
           work_style?: string | null
         }

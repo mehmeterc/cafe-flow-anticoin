@@ -1,4 +1,3 @@
-
 // Import polyfills and shims first - must be before any other imports
 import './shims';
 
