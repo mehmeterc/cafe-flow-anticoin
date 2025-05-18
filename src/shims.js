@@ -1,3 +1,4 @@
+
 // Critical shim for React, require, and Node.js built-ins
 (function() {
   if (typeof window !== 'undefined') {
