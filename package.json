@@ -1,7 +1,7 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "anticoinweb3",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,11 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "check": "tsc --noEmit",
     "clean": "rm -rf node_modules/.cache dist",
-    "postinstall": "echo 'Dependencies installed successfully!'"
+    "postinstall": "echo 'Dependencies installed successfully!'",
+    "start": "vite preview"
+  },
+  "engines": {
+    "node": ">=16"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
