@@ -1,3 +1,4 @@
+
 import { defineConfig, type PluginOption } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
@@ -24,8 +25,7 @@ export default defineConfig(({ mode }) => {
     'process.browser': 'true',
     'global': 'window',
     'globalThis.process': '{}',
-    'globalThis.Buffer': '{}',
-    'Buffer.isBuffer': 'false'
+    'globalThis.Buffer': '{}'
   };
 
   const plugins: PluginOption[] = [
@@ -129,66 +129,25 @@ export default defineConfig(({ mode }) => {
       sourcemap: mode !== 'production',
       
       // Configure esbuild for production
-      esbuildOptions: {
-        // Target modern browsers
-        target: 'es2020',
-        
-        // Enable tree-shaking
-        treeShaking: true,
-        
-        // Define globals
-        define: {
-          'process.env.NODE_ENV': JSON.stringify(mode)
-        }
-      },
-      
-      // Rollup options - consolidated into one section
       rollupOptions: {
         output: {
           // Generate separate chunks for vendor code
           manualChunks: (id) => {
             // Group related node_modules into chunks to optimize loading
-            
-            // React and related packages
             if (id.includes('node_modules/react') || 
-                id.includes('node_modules/react-dom') || 
-                id.includes('node_modules/react-router')) {
+                id.includes('node_modules/react-dom')) {
               return 'vendor-react';
             }
             
-            // UI components
-            if (id.includes('node_modules/@radix-ui')) {
-              return 'vendor-radix';
-            }
-            
-            // Data fetching
-            if (id.includes('node_modules/@tanstack/react-query')) {
-              return 'vendor-query';
-            }
-            
-            // Utilities 
+            // Utilities
             if (id.includes('node_modules/lodash') || 
                 id.includes('node_modules/date-fns')) {
               return 'vendor-utils';
             }
             
-            // Crypto and blockchain libraries
-            if (id.includes('node_modules/crypto-') || 
-                id.includes('node_modules/bn.js') || 
-                id.includes('node_modules/elliptic') ||
-                id.includes('node_modules/web3') ||
-                id.includes('node_modules/ethers')) {
-              return 'vendor-crypto';
-            }
-            
             // Return null for everything else to let Rollup handle it
             return null;
-          },
-          
-          // Configure chunk file names
-          chunkFileNames: 'assets/js/[name]-[hash].js',
-          entryFileNames: 'assets/js/[name]-[hash].js',
-          assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
+          }
         },
       },
     },

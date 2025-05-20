@@ -1,3 +1,4 @@
+
 // Critical shim for React, require, and Node.js built-ins
 // Using a self-executing function to avoid processing issues with Vite's define
 
@@ -75,7 +76,6 @@ if (typeof window !== 'undefined') {
   
   console.log('Shims initialized successfully');
 }
-
 
 // Export a dummy value to ensure this module is not tree-shaken
 export const POLYFILL_LOADED = true;
