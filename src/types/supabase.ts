@@ -24,7 +24,7 @@ export type Cafe = {
   noise_level: number | null;
   seating_type: string | null;
   hourly_cost: number;
-  open_hours: Record<string, {open: string, close: string}> | null;
+  open_hours: any | null; // JSONB field - can be any structure
   image_url: string | null;
   created_at: string;
   updated_at: string;
@@ -48,7 +48,6 @@ export type Checkin = {
   cost: number | null;
   coins_earned: number | null;
   created_at: string;
-  updated_at: string;
 }
 
 export type Booking = {

@@ -87,14 +87,31 @@ const NewBooking = () => {
         throw new Error("Missing required booking information");
       }
       
+      // Calculate end time and total cost
+      const durationHours = parseInt(selectedDuration);
+      const cafe = cafes?.find(c => c.id === selectedCafe);
+      const hourlyRate = cafe?.hourly_cost || 0;
+      const totalCost = hourlyRate * durationHours;
+      
+      // Calculate end_time
+      const [hours, minutes] = selectedTime.split(':');
+      const startMinutes = parseInt(hours) * 60 + parseInt(minutes);
+      const endMinutes = startMinutes + (durationHours * 60);
+      const endHours = Math.floor(endMinutes / 60) % 24;
+      const endMins = endMinutes % 60;
+      const endTime = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
+      
       const { data, error } = await supabase
         .from("bookings")
         .insert({
           user_id: user.id,
           cafe_id: selectedCafe,
+          booking_date: format(selectedDate, "yyyy-MM-dd"),
           date: format(selectedDate, "yyyy-MM-dd"),
           start_time: selectedTime,
-          duration: parseInt(selectedDuration),
+          end_time: endTime,
+          duration: durationHours,
+          total_cost: totalCost,
           status: "confirmed",
         })
         .select()

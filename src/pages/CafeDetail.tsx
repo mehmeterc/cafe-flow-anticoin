@@ -416,7 +416,7 @@ const CafeDetail = () => {
               <div className="bg-gray-50 rounded-lg p-4 mb-6">
                 {cafe.open_hours ? (
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    {Object.entries(cafe.open_hours).map(([day, hours]) => (
+                    {cafe.open_hours && typeof cafe.open_hours === 'object' && Object.entries(cafe.open_hours as Record<string, {open: string, close: string}>).map(([day, hours]) => (
                       <div key={day} className="flex justify-between">
                         <span className="capitalize">{day}:</span>
                         <span>{hours.open} - {hours.close}</span>
