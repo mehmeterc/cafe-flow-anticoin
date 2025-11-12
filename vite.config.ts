@@ -113,14 +113,8 @@ export default defineConfig(({ mode }) => {
     build: {
       // Enable chunk size optimization
       chunkSizeWarningLimit: 1000, // Increased for lovable.dev compatibility
-      minify: 'terser',
-      terserOptions: {
-        compress: {
-          drop_console: mode === 'production',
-          drop_debugger: mode === 'production',
-          pure_funcs: mode === 'production' ? ['console.log', 'console.debug', 'console.info'] : []
-        }
-      },
+      minify: 'esbuild', // Using esbuild (built into Vite) instead of terser
+      
       
       // Speed up build by setting these options
       cssCodeSplit: true,
